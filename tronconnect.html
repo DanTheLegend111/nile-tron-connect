@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Nile Tron</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 32px 24px;
+            max-width: 420px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+        }
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 3px solid #2a2a2a;
+            border-top-color: #00d4aa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 24px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        h1 { font-size: 20px; margin-bottom: 8px; }
+        p { color: #888; font-size: 14px; margin-bottom: 24px; line-height: 1.5; }
+        .wallet-detected {
+            background: #0d332b;
+            border: 1px solid #00d4aa33;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: #00d4aa;
+        }
+        .btn {
+            background: #00d4aa;
+            color: #000;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+            margin-bottom: 8px;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background: transparent;
+            color: #00d4aa;
+            border: 1px solid #00d4aa33;
+            padding: 10px 24px;
+            border-radius: 12px;
+            font-size: 13px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover { background: #00d4aa11; }
+        .error {
+            background: #331a1a;
+            border: 1px solid #ff444433;
+            color: #ff6b6b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            text-align: left;
+            word-break: break-all;
+        }
+        .success {
+            background: #0d332b;
+            border: 1px solid #00d4aa33;
+            color: #00d4aa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        .info-box {
+            background: #1a1a2e;
+            border: 1px solid #2a2a4e;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            text-align: left;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .info-box code {
+            background: #0a0a1a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #00d4aa;
+            font-size: 11px;
+        }
+        .info-box .copy-btn {
+            background: #2a2a4e;
+            color: #00d4aa;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            float: right;
+            margin-top: -2px;
+        }
+        .info-box .copy-btn:hover { background: #3a3a6e; }
+        .hidden { display: none; }
+        .network-details { margin: 16px 0; }
+        .network-details summary {
+            color: #888;
+            cursor: pointer;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .network-details summary:hover { color: #00d4aa; }
+        .manual-step {
+            background: #111;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            text-align: left;
+            font-size: 12px;
+            color: #ccc;
+        }
+        .manual-step span {
+            display: inline-block;
+            background: #00d4aa;
+            color: #000;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="loading">
+            <div class="loader"></div>
+            <h1>Detecting Wallet</h1>
+            <p>Looking for MetaMask, Trust Wallet, TronLink, or compatible wallet...</p>
+        </div>
+
+        <div id="content" class="hidden">
+            <h1>Add Nile Tron</h1>
+            <p>Connect to the Nile Tron network with a single confirmation</p>
+            
+            <div id="walletInfo" class="wallet-detected hidden"></div>
+            <div id="errorMsg" class="error hidden"></div>
+            <div id="successMsg" class="success hidden"></div>
+            
+            <button id="addNetworkBtn" class="btn" onclick="addNileNetwork()">
+                Connect to Nile Tron
+            </button>
+            
+            <button id="retryBtn" class="btn-secondary hidden" onclick="retryWithFallback()">
+                Try Alternative Method
+            </button>
+
+            <div id="manualFallback" class="hidden">
+                <div class="info-box">
+                    <strong style="color:#fff;">Manual Setup</strong>
+                    <button class="copy-btn" onclick="copyAllDetails()">📋 Copy All</button>
+                    <div style="margin-top:8px;display:grid;gap:4px;">
+                        <div>Network: <code id="cp-name">Nile Tron</code></div>
+                        <div>RPC: <code id="cp-rpc">https://nile.trongrid.io/jsonrpc</code></div>
+                        <div>Chain ID: <code id="cp-chainid">3448148188</code></div>
+                        <div>Symbol: <code id="cp-symbol">TRX</code></div>
+                        <div>Explorer: <code id="cp-explorer">https://nile.tronscan.org</code></div>
+                    </div>
+                </div>
+                <details class="network-details">
+                    <summary>📝 How to add manually</summary>
+                    <div class="manual-step"><span>1</span> Open your wallet settings</div>
+                    <div class="manual-step"><span>2</span> Go to Networks → Add Network</div>
+                    <div class="manual-step"><span>3</span> Paste the details above</div>
+                    <div class="manual-step"><span>4</span> Save and switch to Nile Tron</div>
+                </details>
+            </div>
+        </div>
+
+        <div id="noWallet" class="hidden">
+            <h1>Wallet Required</h1>
+            <p>Please install a compatible wallet to continue</p>
+            <div style="display:flex;flex-direction:column;gap:8px;margin:16px 0;">
+                <a href="https://metamask.io/download/" target="_blank" style="color:#00d4aa;text-decoration:none;padding:12px;border:1px solid #2a2a2a;border-radius:8px;">🦊 Install MetaMask</a>
+                <a href="https://trustwallet.com/download/" target="_blank" style="color:#00d4aa;text-decoration:none;padding:12px;border:1px solid #2a2a2a;border-radius:8px;">🔷 Install Trust Wallet</a>
+                <a href="https://www.tronlink.org/" target="_blank" style="color:#00d4aa;text-decoration:none;padding:12px;border:1px solid #2a2a2a;border-radius:8px;">⚡ Install TronLink</a>
+            </div>
+            <details class="network-details">
+                <summary>Or configure Nile Tron manually</summary>
+                <div class="info-box" style="text-align:left;">
+                    <div style="margin-top:8px;display:grid;gap:4px;">
+                        <div>Network: <code>Nile Tron</code></div>
+                        <div>RPC: <code>https://nile.trongrid.io/jsonrpc</code></div>
+                        <div>Chain ID: <code>3448148188</code></div>
+                        <div>Symbol: <code>TRX</code></div>
+                    </div>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        // Primary Nile Tron configuration
+        const NILE_CONFIG = {
+            chainId: '0xCD8690BC',
+            chainName: 'Nile Tron',
+            nativeCurrency: {
+                name: 'TRX',
+                symbol: 'TRX',
+                decimals: 18
+            },
+            rpcUrls: ['https://nile.trongrid.io/jsonrpc'],
+            blockExplorerUrls: ['https://nile.tronscan.org']
+        };
+
+        // Fallback RPC URLs
+        const FALLBACK_RPCS = [
+            'https://nile.trongrid.io/jsonrpc',
+            'https://api.nileex.io/jsonrpc',
+            'https://nile.trongrid.io/jsonrpc'
+        ];
+
+        // Fallback chain IDs (some wallets have issues with the standard one)
+        const FALLBACK_CONFIGS = [
+            {
+                chainId: '0xCD8690BC',
+                chainName: 'Nile Tron',
+                nativeCurrency: { name: 'TRX', symbol: 'TRX', decimals: 18 },
+                rpcUrls: ['https://nile.trongrid.io/jsonrpc'],
+                blockExplorerUrls: ['https://nile.tronscan.org']
+            },
+            {
+                chainId: '0xCD8690BC',
+                chainName: 'Nile Tron',
+                nativeCurrency: { name: 'TRX', symbol: 'TRX', decimals: 18 },
+                rpcUrls: ['https://api.nileex.io/jsonrpc'],
+                blockExplorerUrls: ['https://nile.tronscan.org']
+            }
+        ];
+
+        let currentFallbackIndex = 0;
+        let detectedProviders = [];
+
+        function detectWallet() {
+            const providers = [];
+            
+            // TronLink
+            if (window.tronLink && window.tronLink.request) {
+                providers.push({ name: 'TronLink', provider: window.tronLink, icon: '⚡', priority: 1 });
+            }
+            
+            // Ethereum-compatible wallets
+            if (window.ethereum) {
+                if (window.ethereum.providers) {
+                    window.ethereum.providers.forEach(provider => {
+                        if (provider.isMetaMask) {
+                            providers.push({ name: 'MetaMask', provider, icon: '🦊', priority: 2 });
+                        } else if (provider.isTrust) {
+                            providers.push({ name: 'Trust Wallet', provider, icon: '🔷', priority: 3 });
+                        } else if (provider.isCoinbaseWallet) {
+                            providers.push({ name: 'Coinbase Wallet', provider, icon: '🪙', priority: 4 });
+                        } else {
+                            providers.push({ name: 'Browser Wallet', provider, icon: '🔌', priority: 5 });
+                        }
+                    });
+                } else {
+                    let name = 'Web3 Wallet';
+                    let icon = '🔌';
+                    let priority = 5;
+                    if (window.ethereum.isMetaMask) { name = 'MetaMask'; icon = '🦊'; priority = 2; }
+                    if (window.ethereum.isTrust) { name = 'Trust Wallet'; icon = '🔷'; priority = 3; }
+                    if (window.ethereum.isCoinbaseWallet) { name = 'Coinbase Wallet'; icon = '🪙'; priority = 4; }
+                    providers.push({ name, provider: window.ethereum, icon, priority });
+                }
+            }
+
+            // Sort by priority
+            providers.sort((a, b) => a.priority - b.priority);
+            return providers;
+        }
+
+        function showContent(providers) {
+            document.getElementById('loading').classList.add('hidden');
+            
+            if (providers.length === 0) {
+                document.getElementById('noWallet').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('content').classList.remove('hidden');
+            detectedProviders = providers;
+            
+            const walletInfo = document.getElementById('walletInfo');
+            if (providers.length === 1) {
+                walletInfo.innerHTML = `${providers[0].icon} ${providers[0].name} detected`;
+            } else {
+                walletInfo.innerHTML = providers.map(p => `${p.icon} ${p.name}`).join(' · ');
+            }
+            walletInfo.classList.remove('hidden');
+
+            // Auto-execute after brief delay for wallet initialization
+            setTimeout(addNileNetwork, 800);
+        }
+
+        async function addNileNetwork() {
+            if (detectedProviders.length === 0) {
+                detectedProviders = detectWallet();
+                if (detectedProviders.length === 0) {
+                    showError('No wallet detected. Please install MetaMask, Trust Wallet, or TronLink.');
+                    showManualFallback();
+                    return;
+                }
+            }
+
+            const btn = document.getElementById('addNetworkBtn');
+            const retryBtn = document.getElementById('retryBtn');
+            btn.disabled = true;
+            btn.textContent = 'Connecting...';
+            retryBtn.classList.add('hidden');
+            hideMessages();
+
+            // Try each provider with each fallback config
+            for (const { name, provider, icon } of detectedProviders) {
+                for (const config of FALLBACK_CONFIGS) {
+                    try {
+                        // Attempt 1: Switch to network (if already added)
+                        try {
+                            await provider.request({
+                                method: 'wallet_switchEthereumChain',
+                                params: [{ chainId: config.chainId }]
+                            });
+                            showSuccess(`${icon} ${name}: Switched to Nile Tron successfully!`);
+                            btn.textContent = '✓ Connected';
+                            btn.classList.remove('btn');
+                            btn.classList.add('btn');
+                            return;
+                        } catch (switchError) {
+                            // Error code 4902 = network not added yet
+                            // Error code 4001 = user rejected (don't retry silently)
+                            if (switchError.code === 4001) {
+                                throw switchError;
+                            }
+                            
+                            // Attempt 2: Add the network
+                            if (switchError.code === 4902 || 
+                                switchError.message?.includes('Unrecognized chain ID') ||
+                                switchError.message?.includes('wallet_addEthereumChain') ||
+                                switchError.message?.includes('not recognized')) {
+                                
+                                await provider.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [config]
+                                });
+                                
+                                // Successfully added, now confirm it switched
+                                showSuccess(`${icon} ${name}: Nile Tron added successfully!`);
+                                btn.textContent = '✓ Connected';
+                                return;
+                            }
+                            
+                            // Some wallets throw generic errors
+                            if (switchError.message?.includes('chain')) {
+                                await provider.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [config]
+                                });
+                                showSuccess(`${icon} ${name}: Nile Tron added successfully!`);
+                                btn.textContent = '✓ Connected';
+                                return;
+                            }
+                            
+                            throw switchError;
+                        }
+                    } catch (error) {
+                        console.warn(`${name} failed with config ${config.rpcUrls[0]}:`, error);
+                        
+                        // User rejected - don't continue
+                        if (error.code === 4001) {
+                            showError(`${name}: Connection request was rejected. Please try again.`);
+                            btn.disabled = false;
+                            btn.textContent = 'Connect to Nile Tron';
+                            return;
+                        }
+                        
+                        // Try next config/provider
+                        continue;
+                    }
+                }
+            }
+
+            // All automatic methods failed - show manual fallback
+            showError('Automatic connection failed. Please use the manual method below.');
+            btn.disabled = false;
+            btn.textContent = 'Retry Connection';
+            retryBtn.classList.remove('hidden');
+            showManualFallback();
+        }
+
+        async function retryWithFallback() {
+            currentFallbackIndex++;
+            if (currentFallbackIndex >= FALLBACK_CONFIGS.length) {
+                currentFallbackIndex = 0;
+            }
+            
+            const btn = document.getElementById('addNetworkBtn');
+            const retryBtn = document.getElementById('retryBtn');
+            btn.disabled = true;
+            btn.textContent = `Trying alternative RPC (${currentFallbackIndex + 1}/${FALLBACK_CONFIGS.length})...`;
+            retryBtn.classList.add('hidden');
+            hideMessages();
+            document.getElementById('manualFallback').classList.add('hidden');
+
+            // Try only the current fallback config across all providers
+            const config = FALLBACK_CONFIGS[currentFallbackIndex];
+            for (const { name, provider, icon } of detectedProviders) {
+                try {
+                    await provider.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [config]
+                    });
+                    showSuccess(`${icon} ${name}: Nile Tron added with alternative RPC!`);
+                    btn.textContent = '✓ Connected';
+                    return;
+                } catch (error) {
+                    if (error.code === 4001) {
+                        showError(`${name}: Connection request was rejected.`);
+                        btn.disabled = false;
+                        btn.textContent = 'Connect to Nile Tron';
+                        return;
+                    }
+                    continue;
+                }
+            }
+
+            showError(`All connection attempts failed. Please add Nile Tron manually.`);
+            btn.disabled = false;
+            btn.textContent = 'Retry Connection';
+            retryBtn.classList.remove('hidden');
+            showManualFallback();
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            document.getElementById('successMsg').classList.add('hidden');
+        }
+
+        function showSuccess(msg) {
+            const el = document.getElementById('successMsg');
+            el.textContent = msg;
+            el.classList.remove('hidden');
+            document.getElementById('errorMsg').classList.add('hidden');
+            document.getElementById('addNetworkBtn').disabled = true;
+            document.getElementById('retryBtn').classList.add('hidden');
+            document.getElementById('manualFallback').classList.add('hidden');
+        }
+
+        function showManualFallback() {
+            document.getElementById('manualFallback').classList.remove('hidden');
+        }
+
+        function hideMessages() {
+            document.getElementById('errorMsg').classList.add('hidden');
+            document.getElementById('successMsg').classList.add('hidden');
+        }
+
+        function copyAllDetails() {
+            const details = `Network Name: Nile Tron
+RPC URL: https://nile.trongrid.io/jsonrpc
+Chain ID: 3448148188
+Currency Symbol: TRX
+Decimals: 18
+Block Explorer: https://nile.tronscan.org`;
+            
+            navigator.clipboard.writeText(details).then(() => {
+                const btn = event.target;
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => { btn.textContent = '📋 Copy All'; }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = details;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                const btn = event.target;
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => { btn.textContent = '📋 Copy All'; }, 2000);
+            });
+        }
+
+        // Make copyAllDetails globally accessible for onclick
+        window.copyAllDetails = copyAllDetails;
+
+        // Initialize
+        window.addEventListener('load', () => {
+            detectedProviders = detectWallet();
+            showContent(detectedProviders);
+        });
+
+        // Handle delayed wallet injection (some wallets inject after page load)
+        let walletCheckAttempts = 0;
+        const walletCheckInterval = setInterval(() => {
+            if (detectedProviders.length === 0 && walletCheckAttempts < 10) {
+                detectedProviders = detectWallet();
+                if (detectedProviders.length > 0) {
+                    clearInterval(walletCheckInterval);
+                    showContent(detectedProviders);
+                }
+                walletCheckAttempts++;
+            } else if (walletCheckAttempts >= 10) {
+                clearInterval(walletCheckInterval);
+            }
+        }, 500);
+
+        // EIP-6963 support for modern multi-wallet detection
+        window.addEventListener('eip6963:announceProvider', (event) => {
+            const { provider, info } = event.detail;
+            if (provider && !detectedProviders.find(p => p.provider === provider)) {
+                detectedProviders.push({
+                    name: info?.name || 'Web3 Wallet',
+                    provider,
+                    icon: info?.icon || '🔌',
+                    priority: 99
+                });
+                detectedProviders.sort((a, b) => a.priority - b.priority);
+                if (document.getElementById('loading').classList.contains('hidden') === false) {
+                    showContent(detectedProviders);
+                }
+            }
+        });
+        window.dispatchEvent(new Event('eip6963:requestProvider'));
+    </script>
+</body>
+</html>
